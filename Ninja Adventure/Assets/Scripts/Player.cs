@@ -9,11 +9,13 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private float movementSpeed;
 	private bool facingRight;
+	private Animator myAnimator;
 
 	// Use this for initialization
 	void Start () {
 		facingRight = true;
 		myRigidbody = GetComponent<Rigidbody2D>();
+		myAnimator = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
@@ -25,6 +27,7 @@ public class Player : MonoBehaviour {
 
 	private void HandleMovement(float horizoltal){
 		myRigidbody.velocity = new Vector2(horizoltal * movementSpeed, myRigidbody.velocity.y);
+		myAnimator.SetFloat("speed", Mathf.Abs(horizoltal));
 	}
 
 	private void Flip(float horizoltal){
