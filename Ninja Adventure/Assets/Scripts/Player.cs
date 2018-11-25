@@ -4,19 +4,21 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
 
-	private Rigidbody2D myRigidbody;
-
+	private Rigidbody2D _myRigidbody;
+	private Animator _myAnimator;
 	[SerializeField]
-	private float movementSpeed;
-	private bool facingRight;
-	private Animator myAnimator;
-	private bool attack;
+	private bool _facingRight;
+	private bool _attack;
+	private bool _slide;
+
+	public float movementSpeed;
 
 	// Use this for initialization
 	void Start () {
-		facingRight = true;
-		myRigidbody = GetComponent<Rigidbody2D>();
-		myAnimator = GetComponent<Animator>();
+		movementSpeed = movementSpeed != 0 ? movementSpeed : 10;
+		_facingRight = true;
+		_myRigidbody = GetComponent<Rigidbody2D>();
+		_myAnimator = GetComponent<Animator>();
 	}
 	
 	void Update(){
@@ -33,28 +35,35 @@ public class Player : MonoBehaviour {
 	}
 
 	private void HandleMovement(float horizoltal){
-		if (!this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){ // Do not move it while it is attacking
-			myRigidbody.velocity = new Vector2(horizoltal * movementSpeed, myRigidbody.velocity.y);
+		if (!_myAnimator.GetBool("slide") && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){ // Do not move it while it is attacking
+			_myRigidbody.velocity = new Vector2(horizoltal * movementSpeed, _myRigidbody.velocity.y);
 		}
-		myAnimator.SetFloat("speed", Mathf.Abs(horizoltal));
+		if (_slide && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsName("Slide")){
+			_myAnimator.SetBool("slide", true);
+		} else if (this._myAnimator.GetCurrentAnimatorStateInfo(0).IsName("Slide")){
+			_myAnimator.SetBool("slide", false);
+		}
+		_myAnimator.SetFloat("speed", Mathf.Abs(horizoltal));
 	}
 
 	private void HandleAttack(){
-		if (attack && !this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){
-			myAnimator.SetTrigger("attack");
-			myRigidbody.velocity = Vector2.zero; // Do not run while it is attacking
+		if (_attack && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){
+			_myAnimator.SetTrigger("attack");
+			_myRigidbody.velocity = Vector2.zero; // Do not run while it is attacking
 		}
 	}
 
 	private void HandleInput(){
 		if (Input.GetKeyDown(KeyCode.LeftShift)){
-			attack = true;
+			_attack = true;
+		} else if (Input.GetKeyDown(KeyCode.LeftControl)){
+			_slide = true;
 		}
 	}
 
 	private void Flip(float horizoltal){
-		if (horizoltal > 0 && !facingRight || horizoltal < 0 && facingRight){
-			facingRight = !facingRight;
+		if (horizoltal > 0 && !_facingRight || horizoltal < 0 && _facingRight){
+			_facingRight = !_facingRight;
 			Vector3 theScale = transform.localScale;
 			theScale.x *= -1;
 			transform.localScale = theScale;
@@ -62,7 +71,8 @@ public class Player : MonoBehaviour {
 	}
 
 	private void ResetValues(){
-		attack = false;
+		_attack = false;
+		_slide = false;
 	}
 
 }
