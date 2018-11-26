@@ -43,10 +43,14 @@ public class Player : MonoBehaviour {
 		HandleMovement(horizoltal);
 		Flip(horizoltal);
 		HandleAttack();
+		HandleLayers();
 		ResetValues();
-	}
+	} 
 
 	private void HandleMovement(float horizoltal){
+		if (_myRigidbody.velocity.y < 0){
+			_myAnimator.SetBool("land", true);
+		}
 		if (!_myAnimator.GetBool("slide") && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack") 
 			&& (_isGrounded || _airControl)){ // Do not move it while it is attacking
 			_myRigidbody.velocity = new Vector2(horizoltal * movementSpeed, _myRigidbody.velocity.y);
@@ -54,6 +58,7 @@ public class Player : MonoBehaviour {
 		if (_isGrounded && _jump){
 			_isGrounded = false;
 			_myRigidbody.AddForce(new Vector2(0, jumpForce));
+			_myAnimator.SetTrigger("jump");
 		}
 		if (_slide && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsName("Slide")){
 			_myAnimator.SetBool("slide", true);
@@ -101,11 +106,21 @@ public class Player : MonoBehaviour {
 				Collider2D[] colliders = Physics2D.OverlapCircleAll(point.position, _groundRadius, _whatIsGround); // ckeck if these points are colliding with something
 				for (int count = 0; count < colliders.Length; count ++){
 					if (colliders[count].gameObject != gameObject){ // if the object is different from the player (colliding something else than the player without feet)
+						_myAnimator.ResetTrigger("jump");
+						_myAnimator.SetBool("land", false);
 						return true;
 					}
 				}
 			}
 		}
 		return false;
+	}
+
+	private void HandleLayers(){
+		if (!_isGrounded){
+			_myAnimator.SetLayerWeight(1, 1);
+		} else {
+			_myAnimator.SetLayerWeight(1, 0);
+		}
 	}
 }
