@@ -23,6 +23,7 @@ public class Player : MonoBehaviour {
 	private bool _jump;
 	[SerializeField]
 	private bool _airControl;
+	private bool _jumpAttack;
 
 	// Use this for initialization
 	void Start () {
@@ -69,15 +70,22 @@ public class Player : MonoBehaviour {
 	}
 
 	private void HandleAttack(){
-		if (_attack && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){
+		if (_attack && _isGrounded && !this._myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")){
 			_myAnimator.SetTrigger("attack");
 			_myRigidbody.velocity = Vector2.zero; // Do not run while it is attacking
+		}
+		if (_jumpAttack && !_isGrounded && !this._myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")){
+			_myAnimator.SetBool("jumpAttack", true);
+		}
+		if (!_jumpAttack && this._myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")){
+			_myAnimator.SetBool("jumpAttack", false);
 		}
 	}
 
 	private void HandleInput(){
 		if (Input.GetKeyDown(KeyCode.LeftShift)){
 			_attack = true;
+			_jumpAttack = true;
 		} else if (Input.GetKeyDown(KeyCode.LeftControl)){
 			_slide = true;
 		} else if (Input.GetKeyDown(KeyCode.Space)){
@@ -98,6 +106,7 @@ public class Player : MonoBehaviour {
 		_attack = false;
 		_slide = false;
 		_jump = false;
+		_jumpAttack = false;
 	}
 
 	private bool IsGrounded(){
